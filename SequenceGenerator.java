@@ -24,8 +24,8 @@ public class SequenceGenerator {
 
     private final int nodeId;
 
-    private long lastTimestamp = -1L;
-    private long sequence = 0L;
+    private volatile long lastTimestamp = -1L;
+    private volatile long sequence = 0L;
 
     // Create SequenceGenerator with a nodeId
     public SequenceGenerator(int nodeId) {
