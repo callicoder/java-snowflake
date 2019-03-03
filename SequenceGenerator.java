@@ -41,27 +41,25 @@ public class SequenceGenerator {
     }
 
 
-    public long nextId() {
+    public synchronized long nextId() {
         long currentTimestamp = timestamp();
 
-        synchronized (this) {
-            if(currentTimestamp < lastTimestamp) {
-                throw new IllegalStateException("Invalid System Clock!");
-            }
-
-            if (currentTimestamp == lastTimestamp) {
-                sequence = (sequence + 1) & maxSequence;
-                if(sequence == 0) {
-                    // Sequence Exhausted, wait till next millisecond.
-                    currentTimestamp = waitNextMillis(currentTimestamp);
-                }
-            } else {
-                // reset sequence to start with zero for the next millisecond
-                sequence = 0;
-            }
-
-            lastTimestamp = currentTimestamp;
+        if(currentTimestamp < lastTimestamp) {
+            throw new IllegalStateException("Invalid System Clock!");
         }
+
+        if (currentTimestamp == lastTimestamp) {
+            sequence = (sequence + 1) & maxSequence;
+            if(sequence == 0) {
+                // Sequence Exhausted, wait till next millisecond.
+                currentTimestamp = waitNextMillis(currentTimestamp);
+            }
+        } else {
+            // reset sequence to start with zero for the next millisecond
+            sequence = 0;
+        }
+
+        lastTimestamp = currentTimestamp;
 
         long id = currentTimestamp << (TOTAL_BITS - EPOCH_BITS);
         id |= (nodeId << (TOTAL_BITS - EPOCH_BITS - NODE_ID_BITS));
