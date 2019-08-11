@@ -1,4 +1,4 @@
-## Java distributed Unique ID generated inspired by Twitter snowflake
+## Java distributed Unique ID generator inspired by Twitter snowflake
 
 You can read about Twitter snowflake [here](https://blog.twitter.com/engineering/en_us/a/2010/announcing-snowflake.html).
 
@@ -10,4 +10,4 @@ The IDs are 64-bits in size and are generated with the combination of the follow
 
 Read the blog to understand more:
 
-[Generating unique IDs in a distributed environment at high scale.](https://www.callicoder.com/distributed-unique-id-sequence-number-generator/)
+**[Generating unique IDs in a distributed environment at high scale.](https://www.callicoder.com/distributed-unique-id-sequence-number-generator/)**
