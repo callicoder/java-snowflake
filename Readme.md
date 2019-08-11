@@ -10,4 +10,4 @@ The IDs are 64-bits in size and are generated with the combination of the follow
 
 Read the blog to understand more:
 
-- **[Generating unique IDs in a distributed environment at high scale.](https://www.callicoder.com/distributed-unique-id-sequence-number-generator/)**
+- [Generating unique IDs in a distributed environment at high scale.](https://www.callicoder.com/distributed-unique-id-sequence-number-generator/)
