@@ -8,6 +8,15 @@ The IDs are 64-bits in size and are generated with the combination of the follow
 + **Node ID** - **10 bits**. This gives us 1024 nodes/machines.
 + **Local counter per machine** - **12 bits**. The counter’s max value would be 4095.
 
+## How to use
+
+The `SequenceGenerator` class should be used as a singleton in your application.
+
+```java
+SequenceGenerator s = new SequenceGenerator()
+s.nextId()
+```
+
 Read the blog to understand more:
 
 - [Generating unique IDs in a distributed environment at high scale.](https://www.callicoder.com/distributed-unique-id-sequence-number-generator/)
