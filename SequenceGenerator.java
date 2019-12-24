@@ -11,8 +11,8 @@ import java.util.Enumeration;
  * Make sure that you create and reuse a Single instance of SequenceGenerator per node in your distributed system cluster.
  */
 public class SequenceGenerator {
-    private static final int TOTAL_BITS = 64;
-    private static final int EPOCH_BITS = 42;
+    private static final int UNUSED_BITS = 1; // Sign bit, Unused (always set to 0)
+    private static final int EPOCH_BITS = 41;
     private static final int NODE_ID_BITS = 10;
     private static final int SEQUENCE_BITS = 12;
 
@@ -40,7 +40,6 @@ public class SequenceGenerator {
         this.nodeId = createNodeId();
     }
 
-
     public synchronized long nextId() {
         long currentTimestamp = timestamp();
 
@@ -61,8 +60,8 @@ public class SequenceGenerator {
 
         lastTimestamp = currentTimestamp;
 
-        long id = currentTimestamp << (TOTAL_BITS - EPOCH_BITS);
-        id |= (nodeId << (TOTAL_BITS - EPOCH_BITS - NODE_ID_BITS));
+        long id = currentTimestamp << (NODE_ID_BITS + SEQUENCE_BITS);
+        id |= (nodeId << SEQUENCE_BITS);
         id |= sequence;
         return id;
     }
