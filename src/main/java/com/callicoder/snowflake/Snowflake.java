@@ -1,3 +1,5 @@
+package com.callicoder.snowflake;
+
 import java.net.NetworkInterface;
 import java.security.SecureRandom;
 import java.time.Instant;
@@ -8,35 +10,35 @@ import java.util.Enumeration;
  * Inspired by Twitter snowflake: https://github.com/twitter/snowflake/tree/snowflake-2010
  *
  * This class should be used as a Singleton.
- * Make sure that you create and reuse a Single instance of SequenceGenerator per node in your distributed system cluster.
+ * Make sure that you create and reuse a Single instance of Snowflake per node in your distributed system cluster.
  */
-public class SequenceGenerator {
+public class Snowflake {
     private static final int UNUSED_BITS = 1; // Sign bit, Unused (always set to 0)
     private static final int EPOCH_BITS = 41;
     private static final int NODE_ID_BITS = 10;
     private static final int SEQUENCE_BITS = 12;
 
-    private static final int maxNodeId = (int)(Math.pow(2, NODE_ID_BITS) - 1);
-    private static final int maxSequence = (int)(Math.pow(2, SEQUENCE_BITS) - 1);
+    private static final long maxNodeId = (1L << NODE_ID_BITS) - 1;
+    private static final long maxSequence = (1L << SEQUENCE_BITS) - 1;
 
     // Custom Epoch (January 1, 2015 Midnight UTC = 2015-01-01T00:00:00Z)
     private static final long CUSTOM_EPOCH = 1420070400000L;
 
-    private final int nodeId;
+    private final long nodeId;
 
     private volatile long lastTimestamp = -1L;
     private volatile long sequence = 0L;
 
-    // Create SequenceGenerator with a nodeId
-    public SequenceGenerator(int nodeId) {
+    // Create Snowflake with a nodeId
+    public Snowflake(long nodeId) {
         if(nodeId < 0 || nodeId > maxNodeId) {
             throw new IllegalArgumentException(String.format("NodeId must be between %d and %d", 0, maxNodeId));
         }
         this.nodeId = nodeId;
     }
 
-    // Let SequenceGenerator generate a nodeId
-    public SequenceGenerator() {
+    // Let Snowflake generate a nodeId
+    public Snowflake() {
         this.nodeId = createNodeId();
     }
 
@@ -68,7 +70,7 @@ public class SequenceGenerator {
 
 
     // Get current timestamp in milliseconds, adjust for the custom epoch.
-    private static long timestamp() {
+    private long timestamp() {
         return Instant.now().toEpochMilli() - CUSTOM_EPOCH;
     }
 
@@ -80,8 +82,8 @@ public class SequenceGenerator {
         return currentTimestamp;
     }
 
-    private int createNodeId() {
-        int nodeId;
+    private long createNodeId() {
+        long nodeId;
         try {
             StringBuilder sb = new StringBuilder();
             Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
@@ -89,8 +91,8 @@ public class SequenceGenerator {
                 NetworkInterface networkInterface = networkInterfaces.nextElement();
                 byte[] mac = networkInterface.getHardwareAddress();
                 if (mac != null) {
-                    for(int i = 0; i < mac.length; i++) {
-                        sb.append(String.format("%02X", mac[i]));
+                    for(byte macPort: mac) {
+                        sb.append(String.format("%02X", macPort));
                     }
                 }
             }
@@ -100,5 +102,23 @@ public class SequenceGenerator {
         }
         nodeId = nodeId & maxNodeId;
         return nodeId;
+    }
+
+    public long[] parse(long id) {
+        long maskNodeId = ((1L << NODE_ID_BITS) - 1) << SEQUENCE_BITS;
+        long maskSequence = (1L << SEQUENCE_BITS) - 1;
+
+        long timestamp = (id >> (NODE_ID_BITS + SEQUENCE_BITS)) + CUSTOM_EPOCH;
+        long nodeId = (id & maskNodeId) >> SEQUENCE_BITS;
+        long sequence = id & maskSequence;
+
+        return new long[]{timestamp, nodeId, sequence};
+    }
+
+    @Override
+    public String toString() {
+        return "Snowflake Settings [EPOCH_BITS=" + EPOCH_BITS + ", NODE_ID_BITS=" + NODE_ID_BITS
+                + ", SEQUENCE_BITS=" + SEQUENCE_BITS + ", CUSTOM_EPOCH=" + CUSTOM_EPOCH
+                + ", NodeId=" + nodeId + "]";
     }
 }
