@@ -4,7 +4,7 @@ You can read about Twitter snowflake [here](https://blog.twitter.com/engineering
 
 The IDs are 64-bits in size and are generated with the combination of the following:
 
-+ **Epoch timestamp in milliseconds precision** - **42 bits**. The maximum timestamp that can be represented using 42 bits is 242 - 1, or 4398046511103, which comes out to be Wednesday, May 15, 2109 7:35:11.103 AM. That gives us 139 years with respect to a custom epoch.
++ **Epoch timestamp in milliseconds precision** - **41 bits**. The maximum timestamp that can be represented using 41 bits is `2^41 - 1`, or `2199023255551`, which comes out to be `Wednesday, September 7, 2039 3:47:35.551 PM`. That gives us 69 years with respect to a custom epoch..
 + **Node ID** - **10 bits**. This gives us 1024 nodes/machines.
 + **Local counter per machine** - **12 bits**. The counter’s max value would be 4095.
 
