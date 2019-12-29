@@ -22,24 +22,32 @@ public class Snowflake {
     private static final long maxSequence = (1L << SEQUENCE_BITS) - 1;
 
     // Custom Epoch (January 1, 2015 Midnight UTC = 2015-01-01T00:00:00Z)
-    private static final long CUSTOM_EPOCH = 1420070400000L;
+    private static final long DEFAULT_CUSTOM_EPOCH = 1420070400000L;
 
     private final long nodeId;
+    private final long customEpoch;
 
     private volatile long lastTimestamp = -1L;
     private volatile long sequence = 0L;
 
-    // Create Snowflake with a nodeId
-    public Snowflake(long nodeId) {
+    // Create Snowflake with a nodeId and custom epoch
+    public Snowflake(long nodeId, long customEpoch) {
         if(nodeId < 0 || nodeId > maxNodeId) {
             throw new IllegalArgumentException(String.format("NodeId must be between %d and %d", 0, maxNodeId));
         }
         this.nodeId = nodeId;
+        this.customEpoch = customEpoch;
+    }
+
+    // Create Snowflake with a nodeId
+    public Snowflake(long nodeId) {
+        this(nodeId, DEFAULT_CUSTOM_EPOCH);
     }
 
     // Let Snowflake generate a nodeId
     public Snowflake() {
         this.nodeId = createNodeId();
+        this.customEpoch = DEFAULT_CUSTOM_EPOCH;
     }
 
     public synchronized long nextId() {
@@ -72,7 +80,7 @@ public class Snowflake {
 
     // Get current timestamp in milliseconds, adjust for the custom epoch.
     private long timestamp() {
-        return Instant.now().toEpochMilli() - CUSTOM_EPOCH;
+        return Instant.now().toEpochMilli() - customEpoch;
     }
 
     // Block and wait till next millisecond
@@ -109,7 +117,7 @@ public class Snowflake {
         long maskNodeId = ((1L << NODE_ID_BITS) - 1) << SEQUENCE_BITS;
         long maskSequence = (1L << SEQUENCE_BITS) - 1;
 
-        long timestamp = (id >> (NODE_ID_BITS + SEQUENCE_BITS)) + CUSTOM_EPOCH;
+        long timestamp = (id >> (NODE_ID_BITS + SEQUENCE_BITS)) + customEpoch;
         long nodeId = (id & maskNodeId) >> SEQUENCE_BITS;
         long sequence = id & maskSequence;
 
@@ -119,7 +127,7 @@ public class Snowflake {
     @Override
     public String toString() {
         return "Snowflake Settings [EPOCH_BITS=" + EPOCH_BITS + ", NODE_ID_BITS=" + NODE_ID_BITS
-                + ", SEQUENCE_BITS=" + SEQUENCE_BITS + ", CUSTOM_EPOCH=" + CUSTOM_EPOCH
+                + ", SEQUENCE_BITS=" + SEQUENCE_BITS + ", CUSTOM_EPOCH=" + customEpoch
                 + ", NodeId=" + nodeId + "]";
     }
 }
