@@ -7,10 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 public class SnowflakeTest {
 
@@ -32,10 +29,11 @@ public class SnowflakeTest {
     @Test
     public void nextId_shouldGenerateUniqueId() {
         Snowflake snowflake = new Snowflake(234);
+        int iterations = 5000;
 
         // Validate that the IDs are not same even if they are generated in the same ms
-        long[] ids = new long[5000];
-        for(int i = 0; i < 5000; i++) {
+        long[] ids = new long[iterations];
+        for(int i = 0; i < iterations; i++) {
             ids[i] = snowflake.nextId();
         }
 
@@ -48,16 +46,24 @@ public class SnowflakeTest {
 
     @Test
     public void nextId_shouldGenerateUniqueIdIfCalledFromMultipleThreads() throws InterruptedException, ExecutionException  {
-        ExecutorService executorService = Executors.newFixedThreadPool(50);
+        int numThreads = 50;
+        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+        CountDownLatch latch = new CountDownLatch(numThreads);
 
         Snowflake snowflake = new Snowflake(234);
+        int iterations = 10000;
 
         // Validate that the IDs are not same even if they are generated in the same ms in different threads
-        Future<Long>[] futures = new Future[5000];
-        for(int i = 0; i < 5000; i++) {
-            futures[i] =  executorService.submit(() -> snowflake.nextId());
+        Future<Long>[] futures = new Future[iterations];
+        for(int i = 0; i < iterations; i++) {
+            futures[i] =  executorService.submit(() -> {
+                long id = snowflake.nextId();
+                latch.countDown();;
+                return id;
+            });
         }
 
+        latch.await();
         for(int i = 0; i < futures.length; i++) {
             for(int j = i+1; j < futures.length; j++) {
                 assertFalse(futures[i].get() == futures[j].get());
