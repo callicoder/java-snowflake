@@ -10,10 +10,10 @@ The IDs are 64-bits in size and are generated with the combination of the follow
 
 ## How to use
 
-The `SequenceGenerator` class should be used as a singleton in your application.
+The `Snowflake` class should be used as a singleton in your application.
 
 ```java
-SequenceGenerator s = new SequenceGenerator()
+Snowflake s = new Snowflake(275)
 s.nextId()
 ```
 
